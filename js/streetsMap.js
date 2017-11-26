@@ -295,8 +295,28 @@
             var wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",
                 "http://vmap0.tiles.osgeo.org/wms/vmap0?", {layers: 'basic'});
             var saveStrategy = new OpenLayers.Strategy.Save();
-            
-            vectors = new OpenLayers.Layer.Vector("Vector Layer");
+            vectorsStyles = new OpenLayers.StyleMap({
+				"default": new OpenLayers.Style({
+					strokeColor: "red",
+					strokeOpacity: 1,
+					strokeWidth: 4,
+					fillColor: "orange",
+					fillOpacity: 0.1,
+					pointRadius: 6,
+				}),
+				"select": new OpenLayers.Style({
+					strokeColor: "blue",
+					strokeOpacity: 1,
+					strokeWidth: 4,
+					fillColor: "blue",
+					fillOpacity: 0.3,
+					pointRadius: 6,
+				})
+			});
+            vectors = new OpenLayers.Layer.Vector("Vector Layer",{
+            	projection: map.displayProjection,
+            	styleMap: vectorsStyles
+            });
             var gmap = 	new OpenLayers.Layer.Google(
 							"Google Streets", // the default
 							{type: google.maps.MapTypeId.ROADMAP, numZoomLevels: 20}
@@ -403,8 +423,8 @@
                 }),
 				styleMap: drawStyles			
             }); 
-
-
+            
+            
             map.addLayers([streets, damages, villages, vectors ]);
 
             // var options = {
@@ -438,7 +458,7 @@
             select.activate();   
             map.zoomToExtent(
                 new OpenLayers.Bounds(
-                    100.0600, 19.0775, 100.0700, 19.0875
+                    100.1200, 19.8500, 100.1500, 19.8551
 
                 ).transform(map.displayProjection, map.projection)
             ); 
@@ -453,10 +473,19 @@
             var feature = event.feature;
 			
             // feature.attributes are fields selected in getVillages.php
-			$('#info').append('<p>Name:' + feature.attributes.name + '</p>');
-			$('#info').append('<p>Description:' + feature.attributes.description + '</p>');
-			$('#info').append('<p>Type:' + feature.attributes.stype + '</p>');
-
+            $('#info').append('<form action="./functions/update_street.php" method="post">\
+            	<p>Name : <input type="text" name="name" value="' + feature.attributes.name + '"></p>\
+            	<p>Description : <input type="text" name="des" value="'+feature.attributes.description+'"></p>\
+            	<p>Type : <select name="type" id="type">\
+								  <option  value="1">แอสฟัลท์</option>\
+								  <option  value="2">คอนกรีต</option>\
+								  <option  value="3">ลูกรัง</option>\
+								</select></p>\
+								<input type="hidden" name="id" value="'+feature.attributes.id+'">\
+								<input type="submit" value="Update">\
+					</form>\
+				<button id="btn_d" onclick="delete_data('+feature.attributes.id+',2)"">Delete</button>');
+            document.getElementById("type").value=feature.attributes.type;
 		}
 
 		
@@ -470,13 +499,15 @@
 		function onDamageSelect(event) {
             var feature = event.feature;
             // feature.attributes are fields selected in getDamages.php
-            $('#info').append("<form action='./functions/insert_damages.php' method='post' enctype='multipart/form-data'>");
-			$('#info').append('<p>ID : ' + feature.attributes.id + '</p>');
-			$('#info').append('<p>Name : <input type="text" name="name" value="' + feature.attributes.description + '"></p>');
-			$('#info').append('<p>Telephone : <input type="text" name="tel" value="' + feature.attributes.reportBy + '"></p>');
-			$('#info').append('<p>Image:<img src="images/' + feature.attributes.attach + '"></p>');
-			$('#info').append("</form>");
-			$('#info').append("<button id='btn_d' onclick='delete_data("+feature.attributes.id+",1)'>Delete</button>");
+            $('#info').append('<form action="./functions/update_damages.php" method="post" enctype="multipart/form-data">\
+            					<p>Details : <input type="text" name="des" value="' + feature.attributes.description + '"></p>\
+            					<p>Telephone : <input type="text" name="tel" value="' + feature.attributes.reportBy + '"></p>\
+            					<p>image_chang : <input type="file" name="filUpload"></p>\
+            					<p>Image:<img src="images/' + feature.attributes.attach + '" width="400" height="300"></p>\
+            					<p><input type="hidden" name="id" value="' + feature.attributes.id + '"><input type="hidden" name="image" value="' + feature.attributes.attach + '"></p>\
+            					<input type="submit" value="Update">\
+            					</form>\
+            					<button id="btn_d" onclick="delete_data('+feature.attributes.id+',1)">Delete</button>');
 		}
 
 		
@@ -488,11 +519,20 @@
         
 		function onVillageSelect(event) {
             var feature = event.feature;
-			
+            
             // feature.attributes are fields selected in getVillages.php
-			$('#info').append('<p>ID:' + feature.attributes.id + '</p>');
-			$('#info').append('<p>Name:' + feature.attributes.name + '</p>');
-
+            $('#info').append('<form action="./functions/update_village.php" method="post" >\
+            					<p>Name:<input type="text" name="name" value="' + feature.attributes.name + '"></p>\
+            					<p>Type : <select name="type" id="type">\
+								  <option  value="1">แอสฟัลท์</option>\
+								  <option  value="2">คอนกรีต</option>\
+								  <option  value="3">ลูกรัง</option>\
+								</select></p>\
+								<input type="hidden" name="id" value='+feature.attributes.id+'>\
+            					<input type="submit" value="update">\
+            					</form>\
+            					<button id="btn_d" onclick="delete_data('+feature.attributes.id+',3)">Delete</button>');
+            document.getElementById("type").value=feature.attributes.type;
 		}
 
 		
@@ -531,6 +571,18 @@
             		x.push(str1.geometry.coordinates[i][0]+' '+str1.geometry.coordinates[i][1]);
             		
             	}
+            	var input = "<form action='./functions/insert_street.php' method='post' enctype='multipart/form-data'>\
+            	Name : <input type='text' name='name' value='earth'><br>\
+            	Details : <input type='text' name='des' value='earth'><br>\
+            	Data : <textarea name='coord'>"+str1.geometry.type+'('+x+')'+"</textarea><br>\
+            	Type : <select name='type'>\
+						  <option value='1'>แอสฟัลท์</option>\
+						  <option value='2'>คอนกรีต</option>\
+						  <option value='3'>ลูกรัง</option>\
+						</select>\
+            	<input type='submit' value='add'>\
+            	</form>";
+            	document.getElementById('info').innerHTML = input;
             	console.log(str1.geometry.type+'('+x+')');
             }else if(str1.geometry.type=='Polygon'){
             	var x=[];
@@ -541,6 +593,17 @@
             		x.push(str1.geometry.coordinates[0][i][0]+' '+str1.geometry.coordinates[0][i][1]);
             		
             	}
+            	var input = "<form action='./functions/insert_villages.php' method='post' enctype='multipart/form-data'>\
+            	Name : <input type='text' name='name' value='earth'><br>\
+            	Data : <textarea name='coord'>"+str1.geometry.type+'('+x+')'+"</textarea><br>\
+            	Type : <select name='type'>\
+						  <option value='1'>แอสฟัลท์</option>\
+						  <option value='2'>คอนกรีต</option>\
+						  <option value='3'>ลูกรัง</option>\
+						</select>\
+            	<input type='submit' value='add'>\
+            	</form>";
+            	document.getElementById('info').innerHTML = input;
             	console.log(str1.geometry.type+'('+x+')');
             }
             
@@ -593,7 +656,8 @@
                   tb: tb,
                 },
                 function(data,status){
-                    alert("Data: " + data + "\nStatus: " + status);
+                    console.log("Data: " + data + "\nStatus: " + status);
+                    window.location.href = 'http://localhost/webmap/streets.php';
                 });
             });
         }
