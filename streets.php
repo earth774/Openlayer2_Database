@@ -19,20 +19,25 @@ License URL: http://creativecommons.org/licenses/by/3.0/
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
 	<script src="js/streetsMap.js"></script>
 	<script src="js/jquery2.0.3.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	<style type="text/css">
         input, select, textarea {
             font: 0.9em Verdana, Arial, sans-serif;
         }
-        #leftcol {
+        body{
+            margin:0;
+        }
+       /* #leftcol {
             position: absolute;
             top: 0;
             left: 1em;
             padding-top: 2em;
-            width: 517px;
-        }
+            width: 100%;
+        }*/
         #map {
-            width: 50%em;
-            height: 512px;
+            width: 100%em;
+            height: 48em;
             border: 1px solid #ccc;
         }
         #input {
@@ -67,10 +72,9 @@ License URL: http://creativecommons.org/licenses/by/3.0/
 
 <body>
     <div id="leftcol">
-        <table>
-            <td><div id="map" class="smallmap"></div></td>
-            <td ng-app=""><div id="info">
-    </div></td>
+        <table border="1" style="width: 100%; height: 48em;">
+            <td style="width: 50%"><div id="map" class="smallmap"></div></td>
+            <td ><div class="container"><div id="info"></div></div></td>
         </table>
 
 
